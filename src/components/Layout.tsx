@@ -1,7 +1,7 @@
 import { Link, useLocation } from "wouter";
 import { cn } from "@/lib/utils";
 import { Menu, X, ChevronRight, Shield, Globe, Coins, LayoutDashboard, Code, Building2 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
@@ -15,10 +15,15 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     { name: "Pricing", href: "/pricing" },
   ];
 
-  const isDashboard = location.startsWith("/dashboard") || location.startsWith("/onboarding");
+  const isDashboard = location.startsWith("/dashboard");
+  const isAuth = location.startsWith("/onboarding") || location.startsWith("/login");
 
   if (isDashboard) {
     return <DashboardLayout>{children}</DashboardLayout>;
+  }
+
+  if (isAuth) {
+    return <div className="min-h-screen bg-neutral-50 font-sans">{children}</div>;
   }
 
   return (
@@ -148,6 +153,14 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
 function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
+  const [user, setUser] = useState<any>(null);
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem("upfrica_user");
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
+  }, []);
   
   const sidebarItems = [
     { name: "Overview", href: "/dashboard", icon: LayoutDashboard },
@@ -194,11 +207,11 @@ function DashboardLayout({ children }: { children: React.ReactNode }) {
         <div className="p-4 border-t border-neutral-100">
           <div className="flex items-center gap-3 px-3 py-2">
             <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold text-xs">
-              JD
+              {user?.name ? user.name.substring(0, 2).toUpperCase() : "U"}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-neutral-900 truncate">John Doe</p>
-              <p className="text-xs text-neutral-500 truncate">john@example.com</p>
+              <p className="text-sm font-medium text-neutral-900 truncate">{user?.name || "User"}</p>
+              <p className="text-xs text-neutral-500 truncate">{user?.email || "user@example.com"}</p>
             </div>
           </div>
         </div>

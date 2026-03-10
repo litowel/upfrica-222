@@ -6,6 +6,7 @@ export default function DeveloperSignup() {
   const [step, setStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [diditUrl, setDiditUrl] = useState("");
+  const [diditError, setDiditError] = useState("");
   const [userId, setUserId] = useState("");
   const [formData, setFormData] = useState({
     name: "",
@@ -36,6 +37,7 @@ export default function DeveloperSignup() {
     if (step === 2 && userId) {
       const fetchSession = async () => {
         try {
+          setDiditError("");
           const res = await fetch('/api/kyc/didit-session', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -46,9 +48,11 @@ export default function DeveloperSignup() {
             setDiditUrl(data.url);
           } else {
             console.error("Failed to get KYB session URL", data);
+            setDiditError(data.error || "Failed to initialize verification.");
           }
-        } catch (err) {
+        } catch (err: any) {
           console.error("Error fetching KYB session", err);
+          setDiditError(err.message || "Network error while initializing verification.");
         }
       };
       fetchSession();
@@ -215,7 +219,21 @@ export default function DeveloperSignup() {
               </p>
               
               <div className="min-h-[600px] border border-neutral-200 rounded-lg overflow-hidden bg-neutral-50 relative">
-                {diditUrl ? (
+                {diditError ? (
+                  <div className="flex flex-col items-center justify-center h-[600px] p-6 text-center">
+                    <div className="w-12 h-12 bg-red-100 text-red-600 rounded-full flex items-center justify-center mb-4">
+                      <ShieldCheck size={24} />
+                    </div>
+                    <h4 className="text-lg font-bold text-neutral-900 mb-2">Verification Error</h4>
+                    <p className="text-sm text-neutral-600 mb-6">{diditError}</p>
+                    <button 
+                      onClick={() => setStep(1)}
+                      className="px-4 py-2 bg-neutral-900 text-white rounded-lg text-sm font-medium hover:bg-neutral-800"
+                    >
+                      Go Back
+                    </button>
+                  </div>
+                ) : diditUrl ? (
                   <iframe 
                     src={diditUrl} 
                     allow="camera; microphone" 
@@ -233,13 +251,6 @@ export default function DeveloperSignup() {
               <div className="text-xs text-neutral-400 mt-4">
                 Powered by Didit • Bank-grade Security
               </div>
-              
-              <button
-                onClick={handleNext}
-                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 mt-4"
-              >
-                I have completed verification
-              </button>
             </div>
           )}
 

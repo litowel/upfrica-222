@@ -3,6 +3,7 @@ import Layout from "./components/Layout";
 import Home from "./pages/Home";
 import Dashboard from "./pages/Dashboard";
 import Onboarding from "./pages/Onboarding";
+import Login from "./pages/Login";
 import Developers from "./pages/Developers";
 import Institutional from "./pages/Institutional";
 import Solutions from "./pages/Solutions";
@@ -19,6 +20,7 @@ export default function App() {
       <Switch>
         <Route path="/" component={Home} />
         <Route path="/onboarding" component={Onboarding} />
+        <Route path="/login" component={Login} />
         <Route path="/dashboard" component={Dashboard} />
         <Route path="/dashboard/:subpage*" component={Dashboard} />
         <Route path="/developers" component={Developers} />

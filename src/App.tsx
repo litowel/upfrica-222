@@ -1,9 +1,11 @@
 import { Route, Switch } from "wouter";
 import Layout from "./components/Layout";
+import ProtectedRoute from "./components/ProtectedRoute";
 import Home from "./pages/Home";
 import Dashboard from "./pages/Dashboard";
 import Onboarding from "./pages/Onboarding";
 import Login from "./pages/Login";
+import Kyc from "./pages/Kyc";
 import Developers from "./pages/Developers";
 import Institutional from "./pages/Institutional";
 import Solutions from "./pages/Solutions";
@@ -21,8 +23,24 @@ export default function App() {
         <Route path="/" component={Home} />
         <Route path="/onboarding" component={Onboarding} />
         <Route path="/login" component={Login} />
-        <Route path="/dashboard" component={Dashboard} />
-        <Route path="/dashboard/:subpage*" component={Dashboard} />
+        <Route path="/kyc">
+          <ProtectedRoute>
+            <Kyc />
+          </ProtectedRoute>
+        </Route>
+        
+        {/* Protected Routes */}
+        <Route path="/dashboard">
+          <ProtectedRoute>
+            <Dashboard />
+          </ProtectedRoute>
+        </Route>
+        <Route path="/dashboard/:subpage*">
+          <ProtectedRoute>
+            <Dashboard />
+          </ProtectedRoute>
+        </Route>
+        
         <Route path="/developers" component={Developers} />
         <Route path="/developers/signup" component={DeveloperSignup} />
         <Route path="/developers/pricing" component={DeveloperPricing} />

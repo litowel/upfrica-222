@@ -17,6 +17,80 @@ async function startServer() {
 
   // --- API Routes ---
 
+  // Auth Sign In (Mock)
+  app.post("/api/auth/signin", async (req, res) => {
+    try {
+      const { email, password } = req.body;
+      const user = await prisma.user.findUnique({ where: { email } });
+      if (!user) {
+        return res.status(401).json({ error: 'Incorrect email or password' });
+      }
+      // Mock password check - accept any password for now
+      res.json({ user });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Treasury Data
+  app.get("/api/treasury", async (req, res) => {
+    try {
+      const email = req.headers['x-user-email'] as string;
+      if (!email) return res.status(401).json({ error: 'Unauthorized' });
+      
+      const user = await prisma.user.findUnique({
+        where: { email },
+        include: { wallets: true }
+      });
+      
+      if (!user) return res.status(404).json({ error: 'User not found' });
+      
+      const usdBalance = user.wallets.find(w => w.currency === 'USD')?.balance || 0;
+      const stablecoinBalance = user.wallets.find(w => w.currency === 'USDC')?.balance || 0;
+      const cryptoBalance = user.wallets.filter(w => !['USD', 'USDC'].includes(w.currency)).reduce((acc, w) => acc + w.balance, 0);
+      
+      const treasury = {
+        usdBalance,
+        stablecoinBalance,
+        cryptoBalance,
+        totalValueUsd: usdBalance + stablecoinBalance + cryptoBalance,
+        isActive: true
+      };
+      
+      res.json({ treasury, kycStatus: user.kycStatus, walletAddress: user.wallets.find(w => w.type === 'SAFE_MULTISIG')?.address || null });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Transactions Data
+  app.get("/api/transactions", async (req, res) => {
+    try {
+      const email = req.headers['x-user-email'] as string;
+      if (!email) return res.status(401).json({ error: 'Unauthorized' });
+      
+      const user = await prisma.user.findUnique({ where: { email } });
+      if (!user) return res.status(404).json({ error: 'Not found' });
+      
+      const limit = parseInt((req.query.limit as string) || '20');
+      const skip = parseInt((req.query.skip as string) || '0');
+      
+      const [transactions, total] = await Promise.all([
+        prisma.transaction.findMany({
+          where: { userId: user.id },
+          orderBy: { createdAt: 'desc' },
+          take: limit,
+          skip,
+        }),
+        prisma.transaction.count({ where: { userId: user.id } })
+      ]);
+      
+      res.json({ transactions, total, hasMore: skip + limit < total });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   // Health Check
   app.get("/api/health", (req, res) => {
     res.json({ status: "ok", service: "UpFrica Treasury OS" });

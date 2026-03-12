@@ -16,7 +16,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   ];
 
   const isDashboard = location.startsWith("/dashboard");
-  const isAuth = location.startsWith("/onboarding") || location.startsWith("/login");
+  const isAuth = location.startsWith("/onboarding") || location.startsWith("/login") || location.startsWith("/kyc");
 
   if (isDashboard) {
     return <DashboardLayout>{children}</DashboardLayout>;

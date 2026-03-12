@@ -1,33 +1,55 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Check, Loader2, ShieldCheck, Wallet, User, Building } from "lucide-react";
+import { Check, Loader2, ShieldCheck, Wallet, User, Building, Eye, EyeOff, ArrowRight, CheckCircle } from "lucide-react";
 import { Link, useLocation } from "wouter";
+import toast from "react-hot-toast";
 
 export default function Onboarding() {
+  const [, setLocation] = useLocation();
   const [step, setStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [userId, setUserId] = useState("");
   const [diditUrl, setDiditUrl] = useState("");
   const [diditError, setDiditError] = useState("");
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-    name: "",
-    accountType: "individual" // individual or business
+  const [showPassword, setShowPassword] = useState(false);
+  
+  const [form, setForm] = useState({
+    name: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+    country: '',
+    role: 'USER' as 'USER' | 'BUSINESS',
+    agreedToTerms: false,
   });
-  const [, setLocation] = useLocation();
+  
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const validateStep2 = () => {
+    const e: Record<string, string> = {};
+    if (!form.name || form.name.trim().length < 2) e.name = 'Full name required (min 2 characters)';
+    if (!form.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = 'Valid email address required';
+    if (!form.password || form.password.length < 8) e.password = 'Password must be at least 8 characters';
+    if (form.password !== form.confirmPassword) e.confirmPassword = 'Passwords do not match';
+    if (!form.country) e.country = 'Please select your country';
+    if (!form.agreedToTerms) e.agreedToTerms = 'You must agree to the Terms of Service';
+    setErrors(e);
+    return Object.keys(e).length === 0;
+  };
 
   const handleNext = async () => {
-    setIsLoading(true);
-    // Simulate API call to create user
-    if (step === 1) {
-       // In a real app, we would create the user in the DB here
-       const mockUserId = `user_${Math.random().toString(36).substring(7)}`;
-       setUserId(mockUserId);
+    if (step === 2) {
+      if (!validateStep2()) return;
+      setIsLoading(true);
+      // Simulate API call to create user
+      const mockUserId = `user_${Math.random().toString(36).substring(7)}`;
+      setUserId(mockUserId);
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      setIsLoading(false);
+      setStep(3);
+    } else {
+      setStep(step + 1);
     }
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    setIsLoading(false);
-    setStep(step + 1);
   };
 
   // Fetch Didit Session URL when entering KYC step
@@ -39,7 +61,7 @@ export default function Onboarding() {
           const res = await fetch('/api/kyc/didit-session', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ userId, accountType: formData.accountType })
+            body: JSON.stringify({ userId, accountType: form.role === 'BUSINESS' ? 'business' : 'individual' })
           });
           const data = await res.json();
           if (data.url) {
@@ -55,17 +77,13 @@ export default function Onboarding() {
       };
       fetchSession();
     }
-  }, [step, userId, formData.accountType]);
+  }, [step, userId, form.role]);
 
   // Listen for messages from the Didit iframe
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
-      // You can log event.data to see the exact payload from Didit
-      // console.log("Message from Didit:", event.data);
-      
-      // Example check for completion (adjust based on actual Didit events)
       if (event.data && (event.data === 'verification_complete' || event.data.status === 'approved')) {
-        handleNext();
+        setStep(4);
       }
     };
     window.addEventListener('message', handleMessage);
@@ -79,16 +97,23 @@ export default function Onboarding() {
     
     // Save user to localStorage
     localStorage.setItem("upfrica_user", JSON.stringify({
-      name: formData.name,
-      email: formData.email,
-      accountType: formData.accountType,
+      name: form.name,
+      email: form.email,
+      accountType: form.role,
       balance: 0,
       kycStatus: "APPROVED"
     }));
 
     setIsLoading(false);
+    toast.success('Account created successfully!');
     setLocation("/dashboard");
   };
+
+  const countries = [
+    'Nigeria','Kenya','Ghana','South Africa','Ethiopia','Rwanda',
+    'Tanzania','Uganda','Senegal','Egypt','Morocco',"Côte d'Ivoire",
+    'Cameroon','Zimbabwe','Zambia','Angola','Other'
+  ];
 
   return (
     <div className="min-h-screen bg-neutral-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
@@ -105,7 +130,10 @@ export default function Onboarding() {
           Create your account
         </h2>
         <p className="mt-2 text-center text-sm text-neutral-600">
-          Automated onboarding • Global access • Secure wallet
+          Already have an account?{' '}
+          <Link href="/login">
+            <a className="text-indigo-600 hover:underline">Sign in</a>
+          </Link>
         </p>
       </div>
 
@@ -135,74 +163,131 @@ export default function Onboarding() {
             transition={{ duration: 0.3 }}
           >
             {step === 1 && (
-              <form className="space-y-6" onSubmit={(e) => { e.preventDefault(); handleNext(); }}>
-                <div>
-                  <label className="block text-sm font-medium text-neutral-700">Email address</label>
-                  <input
-                    type="email"
-                    required
-                    className="mt-1 block w-full rounded-md border-neutral-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border"
-                    value={formData.email}
-                    onChange={(e) => setFormData({...formData, email: e.target.value})}
-                  />
+              <div>
+                <h3 className="text-lg font-medium text-neutral-900 mb-2">Choose Account Type</h3>
+                <p className="text-neutral-500 text-sm mb-6">Select the account type that best describes you</p>
+                <div className="space-y-4">
+                  {[
+                    { type: 'USER', icon: User, title: 'Personal Account', desc: 'For individuals — freelancers, remote workers, diaspora, investors' },
+                    { type: 'BUSINESS', icon: Building, title: 'Business Account', desc: 'For companies — SMEs, startups, exporters, institutions' },
+                  ].map((option) => (
+                    <button
+                      key={option.type}
+                      onClick={() => { setForm(f => ({ ...f, role: option.type as any })); setStep(2); }}
+                      className={`w-full bg-white border rounded-xl p-5 text-left transition-all flex items-start space-x-4 ${form.role === option.type ? 'border-indigo-600 ring-1 ring-indigo-600' : 'border-neutral-200 hover:border-indigo-300'}`}
+                    >
+                      <div className="w-12 h-12 rounded-xl bg-indigo-50 flex items-center justify-center flex-shrink-0">
+                        <option.icon className="w-6 h-6 text-indigo-600" />
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-neutral-900 mb-1">{option.title}</h3>
+                        <p className="text-neutral-500 text-sm">{option.desc}</p>
+                      </div>
+                      <ArrowRight className="w-5 h-5 text-neutral-400 self-center flex-shrink-0" />
+                    </button>
+                  ))}
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-neutral-700">Full Name</label>
-                  <input
-                    type="text"
-                    required
-                    className="mt-1 block w-full rounded-md border-neutral-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border"
-                    value={formData.name}
-                    onChange={(e) => setFormData({...formData, name: e.target.value})}
-                  />
-                </div>
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
-                >
-                  {isLoading ? <Loader2 className="animate-spin w-5 h-5" /> : "Continue"}
-                </button>
-              </form>
+              </div>
             )}
 
             {step === 2 && (
-              <form className="space-y-6" onSubmit={(e) => { e.preventDefault(); handleNext(); }}>
-                <h3 className="text-lg font-medium text-neutral-900">Select Account Type</h3>
-                <div className="grid grid-cols-2 gap-4">
+              <div>
+                <button onClick={() => setStep(1)} className="text-neutral-500 text-sm mb-4 hover:text-neutral-900">← Back</button>
+                <h3 className="text-lg font-medium text-neutral-900 mb-6">Your Details</h3>
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-sm text-neutral-700 block mb-1">Full Name <span className="text-red-500">*</span></label>
+                    <input
+                      type="text"
+                      placeholder="John Doe"
+                      value={form.name}
+                      onChange={(e) => { setForm(f => ({ ...f, name: e.target.value })); setErrors(er => ({ ...er, name: '' })) }}
+                      className={`w-full bg-white border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${errors.name ? 'border-red-500' : 'border-neutral-300'}`}
+                    />
+                    {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
+                  </div>
+
+                  <div>
+                    <label className="text-sm text-neutral-700 block mb-1">Email Address <span className="text-red-500">*</span></label>
+                    <input
+                      type="email"
+                      placeholder="you@example.com"
+                      value={form.email}
+                      onChange={(e) => { setForm(f => ({ ...f, email: e.target.value })); setErrors(er => ({ ...er, email: '' })) }}
+                      className={`w-full bg-white border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${errors.email ? 'border-red-500' : 'border-neutral-300'}`}
+                    />
+                    {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
+                  </div>
+
+                  <div>
+                    <label className="text-sm text-neutral-700 block mb-1">Password <span className="text-red-500">*</span></label>
+                    <div className="relative">
+                      <input
+                        type={showPassword ? 'text' : 'password'}
+                        placeholder="Minimum 8 characters"
+                        value={form.password}
+                        onChange={(e) => { setForm(f => ({ ...f, password: e.target.value })); setErrors(er => ({ ...er, password: '' })) }}
+                        className={`w-full bg-white border rounded-xl px-4 py-3 pr-12 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${errors.password ? 'border-red-500' : 'border-neutral-300'}`}
+                      />
+                      <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-500 hover:text-neutral-900">
+                        {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                      </button>
+                    </div>
+                    {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
+                    <div className="h-1 bg-neutral-100 rounded-full mt-2 overflow-hidden">
+                      <div className={`h-full rounded-full transition-all ${form.password.length >= 8 ? 'bg-green-500 w-full' : 'bg-red-500'}`} style={{ width: `${Math.min((form.password.length / 8) * 100, 100)}%` }} />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-sm text-neutral-700 block mb-1">Confirm Password <span className="text-red-500">*</span></label>
+                    <input
+                      type="password"
+                      placeholder="Repeat your password"
+                      value={form.confirmPassword}
+                      onChange={(e) => { setForm(f => ({ ...f, confirmPassword: e.target.value })); setErrors(er => ({ ...er, confirmPassword: '' })) }}
+                      className={`w-full bg-white border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${errors.confirmPassword ? 'border-red-500' : 'border-neutral-300'}`}
+                    />
+                    {errors.confirmPassword && <p className="text-red-500 text-xs mt-1">{errors.confirmPassword}</p>}
+                  </div>
+
+                  <div>
+                    <label className="text-sm text-neutral-700 block mb-1">Country <span className="text-red-500">*</span></label>
+                    <select
+                      value={form.country}
+                      onChange={(e) => { setForm(f => ({ ...f, country: e.target.value })); setErrors(er => ({ ...er, country: '' })) }}
+                      className={`w-full bg-white border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${errors.country ? 'border-red-500' : 'border-neutral-300'}`}
+                    >
+                      <option value="">Select your country...</option>
+                      {countries.map(c => <option key={c} value={c}>{c}</option>)}
+                    </select>
+                    {errors.country && <p className="text-red-500 text-xs mt-1">{errors.country}</p>}
+                  </div>
+
+                  <div>
+                    <label className="flex items-start space-x-3 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={form.agreedToTerms}
+                        onChange={(e) => { setForm(f => ({ ...f, agreedToTerms: e.target.checked })); setErrors(er => ({ ...er, agreedToTerms: '' })) }}
+                        className="mt-1 accent-indigo-600"
+                      />
+                      <span className="text-neutral-600 text-sm">
+                        I agree to the <a href="#" className="text-indigo-600 hover:underline">Terms of Service</a> and <a href="#" className="text-indigo-600 hover:underline">Privacy Policy</a>
+                      </span>
+                    </label>
+                    {errors.agreedToTerms && <p className="text-red-500 text-xs mt-1">{errors.agreedToTerms}</p>}
+                  </div>
+
                   <button
-                    type="button"
-                    onClick={() => setFormData({...formData, accountType: "individual"})}
-                    className={`p-4 border rounded-xl flex flex-col items-center gap-3 text-center transition-all ${
-                      formData.accountType === "individual" 
-                        ? "border-indigo-600 bg-indigo-50 text-indigo-700" 
-                        : "border-neutral-200 hover:border-indigo-200"
-                    }`}
+                    onClick={handleNext}
+                    disabled={isLoading}
+                    className="w-full bg-indigo-600 text-white py-3 rounded-xl font-bold hover:bg-indigo-700 transition-all flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    <User size={24} />
-                    <span className="text-sm font-medium">Individual</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setFormData({...formData, accountType: "business"})}
-                    className={`p-4 border rounded-xl flex flex-col items-center gap-3 text-center transition-all ${
-                      formData.accountType === "business" 
-                        ? "border-indigo-600 bg-indigo-50 text-indigo-700" 
-                        : "border-neutral-200 hover:border-indigo-200"
-                    }`}
-                  >
-                    <Building size={24} />
-                    <span className="text-sm font-medium">Business</span>
+                    {isLoading ? <Loader2 className="animate-spin w-5 h-5" /> : <><span>Continue to Verification</span><ArrowRight className="w-5 h-5" /></>}
                   </button>
                 </div>
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50"
-                >
-                  {isLoading ? <Loader2 className="animate-spin w-5 h-5" /> : "Continue"}
-                </button>
-              </form>
+              </div>
             )}
 
             {step === 3 && (

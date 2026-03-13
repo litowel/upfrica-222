@@ -203,8 +203,7 @@ async function startServer() {
           amount,
           currency,
           status: 'PENDING',
-          paymentRef: transactionRef,
-          metadata: { provider: 'payaza' },
+          reference: transactionRef,
         },
       });
 
@@ -228,7 +227,7 @@ async function startServer() {
       const isSuccess = result?.transaction_status === 'Successful' || result?.status === 'success';
 
       if (isSuccess) {
-        const tx = await prisma.transaction.findFirst({ where: { paymentRef: transactionRef } });
+        const tx = await prisma.transaction.findFirst({ where: { reference: transactionRef } });
         if (tx && tx.status !== 'SUCCESS') {
           await prisma.transaction.update({ where: { id: tx.id }, data: { status: 'SUCCESS' } });
           

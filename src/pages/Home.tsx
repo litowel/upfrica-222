@@ -2,6 +2,7 @@ import { Link } from "wouter";
 import { motion } from "framer-motion";
 import { ArrowRight, Globe, Shield, Zap, Building2, Code2, LineChart, CheckCircle2, Lock, Activity } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
+import ImageSlider from "../components/ImageSlider";
 
 // Helper for count up animation
 function useCountUp(end: number, duration: number = 2000) {
@@ -243,7 +244,7 @@ export default function Home() {
                 </Link>
               </div>
               
-              <div className="flex flex-wrap justify-center gap-4 text-xs font-medium text-neutral-500">
+              <div className="flex flex-wrap justify-center gap-4 text-xs font-medium text-neutral-500 mb-16">
                 <span className="flex items-center gap-1"><Lock className="w-3 h-3"/> 256-bit AES Encryption</span>
                 <span className="hidden sm:inline text-neutral-300">|</span>
                 <span className="flex items-center gap-1"><Globe className="w-3 h-3"/> 190+ Countries Supported</span>
@@ -254,6 +255,15 @@ export default function Home() {
                 <span className="hidden sm:inline text-neutral-300">|</span>
                 <span className="flex items-center gap-1"><Shield className="w-3 h-3"/> KYC/AML Compliant</span>
               </div>
+
+              <ImageSlider 
+                slides={[
+                  { url: "https://picsum.photos/seed/finance1/1200/600", note: "Global Payments Infrastructure across 190+ Countries" },
+                  { url: "https://picsum.photos/seed/dashboard/1200/600", note: "Institutional Treasury Management & Yield Generation" },
+                  { url: "https://picsum.photos/seed/global/1200/600", note: "Real-World Asset Tokenization & Smart Escrow" }
+                ]} 
+                className="w-full h-64 md:h-96 rounded-2xl shadow-2xl border border-neutral-200/50"
+              />
             </motion.div>
           </div>
         </div>
@@ -263,7 +273,7 @@ export default function Home() {
       <section className="bg-neutral-900 py-16 border-y border-neutral-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-4">
-            <AnimatedStat prefix="$" value={2.4} suffix="B+" label="Treasury Volume Processed" />
+            <AnimatedStat value={100} suffix="k+" label="Transactions Secured" />
             <AnimatedStat value={190} suffix="+" label="Countries & Territories" />
             <AnimatedStat value={12} suffix="ms" label="Average Settlement Time" />
             <AnimatedStat value={99.9} suffix="%" label="Platform Uptime" />
@@ -290,16 +300,26 @@ export default function Home() {
               </button>
             ))}
           </div>
-          <div className="md:col-span-8 bg-white rounded-2xl p-8 border border-neutral-200 shadow-sm">
-            <h3 className="text-2xl font-bold text-neutral-900 mb-4">{paymentTabs[activePaymentTab].title}</h3>
-            <p className="text-neutral-600 mb-8 text-lg">{paymentTabs[activePaymentTab].description}</p>
-            <div className="space-y-4">
-              {paymentTabs[activePaymentTab].benefits.map((benefit, i) => (
-                <div key={i} className="flex items-start gap-3">
-                  <CheckCircle2 className="w-6 h-6 text-indigo-600 shrink-0" />
-                  <span className="text-neutral-700 font-medium">{benefit}</span>
-                </div>
-              ))}
+          <div className="md:col-span-8 bg-white rounded-2xl p-8 border border-neutral-200 shadow-sm flex flex-col md:flex-row gap-8 items-center">
+            <div className="flex-1">
+              <h3 className="text-2xl font-bold text-neutral-900 mb-4">{paymentTabs[activePaymentTab].title}</h3>
+              <p className="text-neutral-600 mb-8 text-lg">{paymentTabs[activePaymentTab].description}</p>
+              <div className="space-y-4">
+                {paymentTabs[activePaymentTab].benefits.map((benefit, i) => (
+                  <div key={i} className="flex items-start gap-3">
+                    <CheckCircle2 className="w-6 h-6 text-indigo-600 shrink-0" />
+                    <span className="text-neutral-700 font-medium">{benefit}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="flex-1 w-full">
+              <img 
+                src={`https://picsum.photos/seed/payments${activePaymentTab}/600/600`} 
+                alt="Payments illustration" 
+                className="w-full h-auto object-cover rounded-xl shadow-md border border-neutral-100"
+                referrerPolicy="no-referrer"
+              />
             </div>
           </div>
         </div>
@@ -313,16 +333,26 @@ export default function Home() {
         </div>
         
         <div className="grid md:grid-cols-12 gap-8">
-          <div className="md:col-span-8 bg-white rounded-2xl p-8 border border-neutral-200 shadow-sm order-2 md:order-1">
-            <h3 className="text-2xl font-bold text-neutral-900 mb-4">{treasuryTabs[activeTreasuryTab].title}</h3>
-            <p className="text-neutral-600 mb-8 text-lg">{treasuryTabs[activeTreasuryTab].description}</p>
-            <div className="space-y-4">
-              {treasuryTabs[activeTreasuryTab].benefits.map((benefit, i) => (
-                <div key={i} className="flex items-start gap-3">
-                  <CheckCircle2 className="w-6 h-6 text-indigo-600 shrink-0" />
-                  <span className="text-neutral-700 font-medium">{benefit}</span>
-                </div>
-              ))}
+          <div className="md:col-span-8 bg-white rounded-2xl p-8 border border-neutral-200 shadow-sm order-2 md:order-1 flex flex-col md:flex-row gap-8 items-center">
+            <div className="flex-1 w-full">
+              <img 
+                src={`https://picsum.photos/seed/treasury${activeTreasuryTab}/600/600`} 
+                alt="Treasury illustration" 
+                className="w-full h-auto object-cover rounded-xl shadow-md border border-neutral-100"
+                referrerPolicy="no-referrer"
+              />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-2xl font-bold text-neutral-900 mb-4">{treasuryTabs[activeTreasuryTab].title}</h3>
+              <p className="text-neutral-600 mb-8 text-lg">{treasuryTabs[activeTreasuryTab].description}</p>
+              <div className="space-y-4">
+                {treasuryTabs[activeTreasuryTab].benefits.map((benefit, i) => (
+                  <div key={i} className="flex items-start gap-3">
+                    <CheckCircle2 className="w-6 h-6 text-indigo-600 shrink-0" />
+                    <span className="text-neutral-700 font-medium">{benefit}</span>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
           <div className="md:col-span-4 flex flex-col gap-2 order-1 md:order-2">
@@ -358,16 +388,26 @@ export default function Home() {
               </button>
             ))}
           </div>
-          <div className="md:col-span-8 bg-white rounded-2xl p-8 border border-neutral-200 shadow-sm">
-            <h3 className="text-2xl font-bold text-neutral-900 mb-4">{assetTabs[activeAssetTab].title}</h3>
-            <p className="text-neutral-600 mb-8 text-lg">{assetTabs[activeAssetTab].description}</p>
-            <div className="space-y-4">
-              {assetTabs[activeAssetTab].benefits.map((benefit, i) => (
-                <div key={i} className="flex items-start gap-3">
-                  <CheckCircle2 className="w-6 h-6 text-indigo-600 shrink-0" />
-                  <span className="text-neutral-700 font-medium">{benefit}</span>
-                </div>
-              ))}
+          <div className="md:col-span-8 bg-white rounded-2xl p-8 border border-neutral-200 shadow-sm flex flex-col md:flex-row gap-8 items-center">
+            <div className="flex-1">
+              <h3 className="text-2xl font-bold text-neutral-900 mb-4">{assetTabs[activeAssetTab].title}</h3>
+              <p className="text-neutral-600 mb-8 text-lg">{assetTabs[activeAssetTab].description}</p>
+              <div className="space-y-4">
+                {assetTabs[activeAssetTab].benefits.map((benefit, i) => (
+                  <div key={i} className="flex items-start gap-3">
+                    <CheckCircle2 className="w-6 h-6 text-indigo-600 shrink-0" />
+                    <span className="text-neutral-700 font-medium">{benefit}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="flex-1 w-full">
+              <img 
+                src={`https://picsum.photos/seed/asset${activeAssetTab}/600/600`} 
+                alt="Asset Management illustration" 
+                className="w-full h-auto object-cover rounded-xl shadow-md border border-neutral-100"
+                referrerPolicy="no-referrer"
+              />
             </div>
           </div>
         </div>
@@ -503,7 +543,7 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h4 className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-6 text-center">Built on battle-tested infrastructure</h4>
           <div className="flex flex-wrap justify-center gap-4 md:gap-8">
-            {['Safe Global', 'Thirdweb', 'Pionex', 'Transak', 'Didit KYC', 'Paystack', 'Payaza', 'Neon', 'Netlify'].map((partner) => (
+            {['Safe Global', 'Thirdweb', 'Pionex', 'Transak', 'Didit KYC', 'Paystack', 'Payaza', 'Neon'].map((partner) => (
               <div key={partner} className="px-4 py-2 bg-neutral-50 border border-neutral-200 rounded-lg text-sm font-medium text-neutral-500 hover:text-neutral-900 hover:border-neutral-300 hover:bg-white transition-all grayscale hover:grayscale-0 cursor-default">
                 {partner}
               </div>

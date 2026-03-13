@@ -13,6 +13,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     { name: "Institutional", href: "/institutional" },
     { name: "Developers", href: "/developers" },
     { name: "Pricing", href: "/pricing" },
+    { name: "About", href: "/about" },
   ];
 
   const isDashboard = location.startsWith("/dashboard");
@@ -135,6 +136,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           <div>
             <h4 className="text-white font-semibold mb-6">Platform</h4>
             <ul className="space-y-3 text-sm">
+              <li><Link href="/about"><a className="hover:text-white transition-colors">About Us</a></Link></li>
               <li><Link href="/solutions"><a className="hover:text-white transition-colors">Solutions</a></Link></li>
               <li><Link href="/institutional"><a className="hover:text-white transition-colors">Institutional</a></Link></li>
               <li><Link href="/pricing"><a className="hover:text-white transition-colors">Pricing</a></Link></li>
@@ -154,9 +156,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           <div>
             <h4 className="text-white font-semibold mb-6">Legal</h4>
             <ul className="space-y-3 text-sm">
+              <li><Link href="/security"><a className="hover:text-white transition-colors">Security & Compliance</a></Link></li>
               <li><a href="#" className="hover:text-white transition-colors">Privacy Policy</a></li>
               <li><a href="#" className="hover:text-white transition-colors">Terms of Service</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Compliance</a></li>
             </ul>
           </div>
         </div>
@@ -165,7 +167,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           <div className="bg-neutral-800/50 rounded-2xl p-6 border border-neutral-800">
             <h4 className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-4 text-center">Powered by licensed & regulated partners</h4>
             <div className="flex flex-wrap justify-center gap-3">
-              {['Paystack', 'Payaza', 'Safe Global', 'Thirdweb', 'Pionex', 'Transak', 'Didit KYC', 'Sumsub', 'Neon', 'Netlify'].map((partner) => (
+              {['Paystack', 'Payaza', 'Safe Global', 'Thirdweb', 'Pionex', 'Transak', 'Didit KYC', 'Escrow.com', 'OpenSea'].map((partner) => (
                 <a key={partner} href="#" className="px-4 py-2 bg-neutral-900 border border-neutral-700 rounded-lg text-xs font-medium text-neutral-400 hover:text-white hover:border-neutral-500 hover:bg-neutral-800 transition-all grayscale hover:grayscale-0">
                   {partner}
                 </a>

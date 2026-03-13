@@ -107,44 +107,86 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
       <main className="pt-16">{children}</main>
 
-      <footer className="bg-neutral-900 text-neutral-400 py-12 border-t border-neutral-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-2 md:grid-cols-4 gap-8">
-          <div>
+      <footer className="bg-neutral-900 text-neutral-400 py-16 border-t border-neutral-800">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
+          <div className="lg:col-span-1">
             <div className="flex items-center gap-2 mb-6 text-white">
-              <div className="w-6 h-6 bg-indigo-600 rounded flex items-center justify-center font-bold text-sm">U</div>
-              <span className="font-bold text-lg">UpFrica</span>
+              <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center font-bold text-lg">U</div>
+              <span className="font-bold text-xl tracking-tight">UpFrica</span>
             </div>
-            <p className="text-sm leading-relaxed max-w-xs">
+            <p className="text-sm leading-relaxed mb-6">
               The Financial Operating System for the Global Economy. Automated treasury, payments, and asset management.
             </p>
+            <div className="flex flex-col gap-2">
+              <span className="inline-flex items-center gap-2 text-xs font-medium text-neutral-300 bg-neutral-800 px-3 py-1.5 rounded-md w-fit">
+                🔒 Partner-Regulated
+              </span>
+              <span className="inline-flex items-center gap-2 text-xs font-medium text-neutral-300 bg-neutral-800 px-3 py-1.5 rounded-md w-fit">
+                🛡️ KYC via Didit
+              </span>
+              <span className="inline-flex items-center gap-2 text-xs font-medium text-neutral-300 bg-neutral-800 px-3 py-1.5 rounded-md w-fit">
+                🌐 Ghana Incorporated
+              </span>
+              <span className="inline-flex items-center gap-2 text-xs font-medium text-neutral-300 bg-neutral-800 px-3 py-1.5 rounded-md w-fit">
+                📋 Audit Ready
+              </span>
+            </div>
           </div>
           <div>
-            <h4 className="text-white font-semibold mb-4">Platform</h4>
-            <ul className="space-y-2 text-sm">
+            <h4 className="text-white font-semibold mb-6">Platform</h4>
+            <ul className="space-y-3 text-sm">
               <li><Link href="/solutions"><a className="hover:text-white transition-colors">Solutions</a></Link></li>
               <li><Link href="/institutional"><a className="hover:text-white transition-colors">Institutional</a></Link></li>
               <li><Link href="/pricing"><a className="hover:text-white transition-colors">Pricing</a></Link></li>
+              <li><Link href="/treasury"><a className="hover:text-white transition-colors">Treasury</a></Link></li>
+              <li><Link href="/payments"><a className="hover:text-white transition-colors">Payments</a></Link></li>
+              <li><Link href="/asset-management"><a className="hover:text-white transition-colors">Asset Management</a></Link></li>
             </ul>
           </div>
           <div>
-            <h4 className="text-white font-semibold mb-4">Developers</h4>
-            <ul className="space-y-2 text-sm">
+            <h4 className="text-white font-semibold mb-6">Developers</h4>
+            <ul className="space-y-3 text-sm">
               <li><Link href="/developers"><a className="hover:text-white transition-colors">Documentation</a></Link></li>
               <li><Link href="/developers"><a className="hover:text-white transition-colors">API Reference</a></Link></li>
-              <li><Link href="/developers"><a className="hover:text-white transition-colors">Status</a></Link></li>
+              <li><Link href="/status"><a className="hover:text-white transition-colors">API Status</a></Link></li>
             </ul>
           </div>
           <div>
-            <h4 className="text-white font-semibold mb-4">Legal</h4>
-            <ul className="space-y-2 text-sm">
+            <h4 className="text-white font-semibold mb-6">Legal</h4>
+            <ul className="space-y-3 text-sm">
               <li><a href="#" className="hover:text-white transition-colors">Privacy Policy</a></li>
               <li><a href="#" className="hover:text-white transition-colors">Terms of Service</a></li>
               <li><a href="#" className="hover:text-white transition-colors">Compliance</a></li>
             </ul>
           </div>
         </div>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 pt-8 border-t border-neutral-800 text-xs text-center">
-          © {new Date().getFullYear()} UpFrica Financial Systems. All rights reserved.
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-12">
+          <div className="bg-neutral-800/50 rounded-2xl p-6 border border-neutral-800">
+            <h4 className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-4 text-center">Powered by licensed & regulated partners</h4>
+            <div className="flex flex-wrap justify-center gap-3">
+              {['Paystack', 'Payaza', 'Safe Global', 'Thirdweb', 'Pionex', 'Transak', 'Didit KYC', 'Sumsub', 'Neon', 'Netlify'].map((partner) => (
+                <a key={partner} href="#" className="px-4 py-2 bg-neutral-900 border border-neutral-700 rounded-lg text-xs font-medium text-neutral-400 hover:text-white hover:border-neutral-500 hover:bg-neutral-800 transition-all grayscale hover:grayscale-0">
+                  {partner}
+                </a>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8">
+          <p className="text-[11px] leading-relaxed text-neutral-500 text-justify">
+            UpFrica is a financial technology platform operated by Oskayi Consult, a company incorporated in Ghana (<a href="https://www.giideatg.com" target="_blank" rel="noreferrer" className="hover:text-neutral-300 underline">www.giideatg.com</a>). All payment, treasury, KYC, custody, trading, and asset management services on this platform are delivered through internationally licensed and regulated integration partners. UpFrica and Oskayi Consult do not hold client funds directly. Regulatory coverage and compliance obligations are fulfilled by our licensed partners in their respective jurisdictions. For enquiries: <a href="mailto:oskayi@giideatg.com" className="hover:text-neutral-300">oskayi@giideatg.com</a> | <a href="mailto:info@giideatg.com" className="hover:text-neutral-300">info@giideatg.com</a>
+          </p>
+        </div>
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 border-t border-neutral-800 text-xs text-center flex flex-col md:flex-row justify-between items-center gap-4">
+          <span>© {new Date().getFullYear()} UpFrica Financial Systems. All rights reserved.</span>
+          <div className="flex gap-4">
+            <a href="#" className="hover:text-white transition-colors">Twitter</a>
+            <a href="#" className="hover:text-white transition-colors">LinkedIn</a>
+            <a href="#" className="hover:text-white transition-colors">GitHub</a>
+          </div>
         </div>
       </footer>
     </div>

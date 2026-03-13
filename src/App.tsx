@@ -3,6 +3,9 @@ import Layout from "./components/Layout";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Home from "./pages/Home";
 import Dashboard from "./pages/Dashboard";
+import Treasury from "./pages/Treasury";
+import Payments from "./pages/Payments";
+import AssetManagement from "./pages/AssetManagement";
 import Onboarding from "./pages/Onboarding";
 import Login from "./pages/Login";
 import Kyc from "./pages/Kyc";
@@ -23,6 +26,12 @@ export default function App() {
         <Route path="/" component={Home} />
         <Route path="/onboarding" component={Onboarding} />
         <Route path="/login" component={Login} />
+        <Route path="/solutions" component={Solutions} />
+        <Route path="/institutional" component={Institutional} />
+        <Route path="/pricing" component={Pricing} />
+        <Route path="/developers" component={Developers} />
+        <Route path="/payments" component={Payments} />
+        <Route path="/asset-management" component={AssetManagement} />
         <Route path="/kyc">
           <ProtectedRoute>
             <Kyc />
@@ -33,6 +42,11 @@ export default function App() {
         <Route path="/dashboard">
           <ProtectedRoute>
             <Dashboard />
+          </ProtectedRoute>
+        </Route>
+        <Route path="/treasury">
+          <ProtectedRoute>
+            <Treasury />
           </ProtectedRoute>
         </Route>
         <Route path="/dashboard/:subpage*">

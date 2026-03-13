@@ -163,6 +163,105 @@ async function startServer() {
     res.json(apiKey);
   });
 
+  // Payaza Payment Initialization
+  app.post("/api/payments/payaza/initialize", async (req, res) => {
+    try {
+      const email = req.headers['x-user-email'] as string;
+      if (!email) return res.status(401).json({ error: 'Unauthorized' });
+      
+      const user = await prisma.user.findUnique({ where: { email } });
+      if (!user) return res.status(404).json({ error: 'User not found' });
+      if (user.kycStatus !== 'APPROVED') return res.status(403).json({ error: 'KYC verification required' });
+
+      const { amount, currency = 'USD' } = req.body;
+      if (!amount || amount < 1) return res.status(400).json({ error: 'Minimum deposit is $1' });
+
+      const { v4: uuidv4 } = await import('uuid');
+      const transactionRef = `UPF-${uuidv4().substring(0, 8).toUpperCase()}`;
+      const nameParts = (user.name || 'UpFrica User').split(' ');
+      const firstName = nameParts[0] || 'UpFrica';
+      const lastName = nameParts[1] || 'User';
+
+      const { initializePayazaTransaction } = await import('./src/lib/payaza.js');
+      
+      const appUrl = process.env.APP_URL || `http://localhost:${PORT}`;
+
+      const result = await initializePayazaTransaction({
+        email: user.email,
+        amount,
+        currency,
+        firstName,
+        lastName,
+        callbackUrl: `${appUrl}/api/payments/payaza/verify`,
+        transactionRef,
+      });
+
+      await prisma.transaction.create({
+        data: {
+          userId: user.id,
+          type: 'DEPOSIT',
+          amount,
+          currency,
+          status: 'PENDING',
+          paymentRef: transactionRef,
+          metadata: { provider: 'payaza' },
+        },
+      });
+
+      res.json({ success: true, checkoutUrl: result.checkout_url, transactionRef });
+    } catch (error: any) {
+      console.error('Payaza init error:', error.response?.data || error.message);
+      res.status(500).json({ error: 'Payment initialization failed' });
+    }
+  });
+
+  // Payaza Payment Verification
+  app.get("/api/payments/payaza/verify", async (req, res) => {
+    try {
+      const transactionRef = (req.query.transaction_ref || req.query.reference) as string;
+      const appUrl = process.env.APP_URL || `http://localhost:${PORT}`;
+      
+      if (!transactionRef) return res.redirect(`${appUrl}/treasury?error=no_reference`);
+
+      const { verifyPayazaTransaction } = await import('./src/lib/payaza.js');
+      const result = await verifyPayazaTransaction(transactionRef);
+      const isSuccess = result?.transaction_status === 'Successful' || result?.status === 'success';
+
+      if (isSuccess) {
+        const tx = await prisma.transaction.findFirst({ where: { paymentRef: transactionRef } });
+        if (tx && tx.status !== 'SUCCESS') {
+          await prisma.transaction.update({ where: { id: tx.id }, data: { status: 'SUCCESS' } });
+          
+          // Update the USD wallet balance
+          const wallet = await prisma.wallet.findFirst({
+            where: { userId: tx.userId, currency: 'USD' }
+          });
+          
+          if (wallet) {
+            await prisma.wallet.update({
+              where: { id: wallet.id },
+              data: { balance: { increment: tx.amount } }
+            });
+          } else {
+            await prisma.wallet.create({
+              data: {
+                userId: tx.userId,
+                currency: 'USD',
+                type: 'FIAT',
+                balance: tx.amount
+              }
+            });
+          }
+        }
+        return res.redirect(`${appUrl}/dashboard?deposit=success`);
+      }
+      return res.redirect(`${appUrl}/treasury?error=payment_failed`);
+    } catch (error: any) {
+      const appUrl = process.env.APP_URL || `http://localhost:${PORT}`;
+      return res.redirect(`${appUrl}/treasury?error=verification_failed`);
+    }
+  });
+
   // Didit KYC Session Generation
   app.post("/api/kyc/didit-session", async (req, res) => {
     const { userId, accountType } = req.body;

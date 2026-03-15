@@ -4,10 +4,61 @@ import { PrismaClient } from "@prisma/client";
 import path from "path";
 import { fileURLToPath } from "url";
 
+if (!process.env.DIDIT_CLIENT_ID || !process.env.DIDIT_CLIENT_SECRET) {
+  console.error('ERROR: DIDIT_CLIENT_ID and DIDIT_CLIENT_SECRET must be set');
+}
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // Initialize Prisma
 const prisma = new PrismaClient();
+
+async function getDiditAccessToken(): Promise<string> {
+  const credentials = Buffer.from(`${process.env.DIDIT_CLIENT_ID}:${process.env.DIDIT_CLIENT_SECRET}`).toString('base64');
+  const response = await fetch('https://apx.didit.me/auth/v2/token', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Basic ${credentials}`,
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: 'grant_type=client_credentials',
+  });
+
+  if (!response.ok) {
+    const error = await response.text();
+    throw new Error(`Didit auth failed: ${error}`);
+  }
+
+  const data = await response.json();
+  return data.access_token;
+}
+
+async function createDiditSession(userId: string, callbackUrl: string) {
+  const token = await getDiditAccessToken();
+  const response = await fetch('https://apx.didit.me/v2/session/', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      callback: callbackUrl,
+      vendor_data: userId,
+      features: 'OCR + FACE',
+    }),
+  });
+
+  if (!response.ok) {
+    const error = await response.text();
+    throw new Error(`Didit session creation failed: ${error}`);
+  }
+
+  const data = await response.json();
+  return {
+    sessionId: data.session_id,
+    verificationUrl: data.url,
+  };
+}
 
 async function startServer() {
   const app = express();
@@ -263,68 +314,24 @@ async function startServer() {
 
   // Didit KYC Session Generation
   app.post("/api/kyc/didit-session", async (req, res) => {
-    const { userId, accountType } = req.body;
+    const { userId } = req.body;
     
     try {
-      const clientId = process.env.DIDIT_CLIENT_ID;
-      const clientSecret = process.env.DIDIT_CLIENT_SECRET;
-
-      let sessionUrl = "https://verify.didit.me/u/v3hIiGxYTC6-x7wTXdEjWg"; // Fallback URL
-
-      if (clientId && clientSecret) {
-        try {
-          // 1. Authenticate with Didit (Standard OAuth2 Client Credentials flow)
-          const tokenResponse = await fetch('https://auth.didit.me/oauth2/token', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/x-www-form-urlencoded',
-              'Authorization': `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString('base64')}`
-            },
-            body: new URLSearchParams({ grant_type: 'client_credentials' })
-          });
-
-          if (tokenResponse.ok) {
-            const { access_token } = await tokenResponse.json();
-
-            // 2. Create a verification session
-            // accountType determines if it's KYC (individual) or KYB (business)
-            const verificationType = accountType === 'business' ? 'kyb' : 'kyc';
-            
-            const sessionResponse = await fetch('https://api.didit.me/v1/sessions', {
-              method: 'POST',
-              headers: {
-                'Authorization': `Bearer ${access_token}`,
-                'Content-Type': 'application/json'
-              },
-              body: JSON.stringify({
-                vendor_user_id: userId,
-                features: [verificationType],
-                callback_url: `${req.protocol}://${req.get('host')}/api/kyc/webhook`
-              })
-            });
-
-            if (sessionResponse.ok) {
-              const sessionData = await sessionResponse.json();
-              if (sessionData.url) {
-                sessionUrl = sessionData.url;
-              }
-            } else {
-              console.warn("Didit session creation failed, falling back to static URL. Status:", sessionResponse.status);
-            }
-          } else {
-            console.warn("Didit authentication failed, falling back to static URL. Status:", tokenResponse.status);
-          }
-        } catch (apiError) {
-          console.error("Error calling Didit API, falling back to static URL:", apiError);
-        }
-      } else {
-        console.log("DIDIT_CLIENT_ID or DIDIT_CLIENT_SECRET not set. Using static fallback URL.");
+      if (!process.env.DIDIT_CLIENT_ID || !process.env.DIDIT_CLIENT_SECRET) {
+        console.error("DIDIT_CLIENT_ID or DIDIT_CLIENT_SECRET environment variables are missing.");
+        return res.status(500).json({ 
+          error: "KYC service is not configured. Please set DIDIT_CLIENT_ID and DIDIT_CLIENT_SECRET environment variables." 
+        });
       }
+
+      console.log(`Creating Didit session for user ${userId}...`);
+      const callbackUrl = `${req.protocol}://${req.get('host')}/api/kyc/webhook`;
+      const sessionData = await createDiditSession(userId, callbackUrl);
       
-      res.json({ url: sessionUrl });
-    } catch (error) {
-      console.error("Didit session error:", error);
-      res.status(500).json({ error: "Failed to generate KYC session" });
+      return res.json({ url: sessionData.verificationUrl, sessionId: sessionData.sessionId });
+    } catch (error: any) {
+      console.error("Didit session error:", error.message || error);
+      res.status(500).json({ error: error.message || "Failed to generate KYC session" });
     }
   });
 

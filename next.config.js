@@ -1,8 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  output: 'standalone',
   experimental: {
-    // serverActions: true, // Enabled by default in newer versions
+    // serverActions: true,
   },
 };
 

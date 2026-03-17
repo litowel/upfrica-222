@@ -52,7 +52,7 @@ export default function MarketsLanding() {
                   </div>
                 </Link>
                 <div className="mt-4 pt-4 border-t border-white/5">
-                  <Link href="/products" className="text-xs font-bold text-white hover:text-white/60 transition-colors flex items-center justify-between">
+                  <Link href="/productss" className="text-xs font-bold text-white hover:text-white/60 transition-colors flex items-center justify-between">
                     View All Products
                     <ArrowRight className="w-3 h-3" />
                   </Link>

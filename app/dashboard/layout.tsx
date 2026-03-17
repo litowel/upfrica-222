@@ -158,7 +158,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     </div>
                   </Link>
                   <div className="mt-4 pt-4 border-t border-black/5">
-                    <Link href="/products" className="text-[10px] font-bold text-black hover:text-black/60 transition-colors flex items-center justify-between">
+                    <Link href="/productss" className="text-[10px] font-bold text-black hover:text-black/60 transition-colors flex items-center justify-between">
                       View All Products
                       <ArrowRight className="w-3 h-3" />
                     </Link>

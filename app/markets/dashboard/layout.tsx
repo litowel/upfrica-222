@@ -138,7 +138,7 @@ export default function MarketsDashboardLayout({
                   </div>
                 </Link>
                 <div className="mt-4 pt-4 border-t border-white/5">
-                  <Link href="/products" className="text-[10px] font-bold text-white hover:text-white/60 transition-colors flex items-center justify-between">
+                  <Link href="/productss" className="text-[10px] font-bold text-white hover:text-white/60 transition-colors flex items-center justify-between">
                     View All Products
                     <ArrowRight className="w-3 h-3" />
                   </Link>

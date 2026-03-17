@@ -9,25 +9,31 @@ datasource db {
 }
 
 model User {
-  id            String    @id @default(uuid())
-  email         String    @unique
-  name          String?
-  kycStatus     String    @default("PENDING") // PENDING, VERIFIED, REJECTED
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id                String    @id @default(uuid())
+  email             String    @unique
+  password          String
+  name              String?
+  businessName      String?
+  kybStatus         String    @default("PENDING") // PENDING, VERIFIED, REJECTED
+  twoFactorSecret   String?
+  twoFactorEnabled  Boolean   @default(false)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
   
   wallets       Wallet[]
   apiKeys       ApiKey[]
   transactions  Transaction[]
+  settlements   Settlement[]
 }
 
 model Wallet {
   id            String    @id @default(uuid())
   userId        String
   user          User      @relation(fields: [userId], references: [id])
-  currency      String    // USD, USDC, BTC, ETH
+  currency      String    // USD, USDC, NGN, GHS
   balance       Float     @default(0.0)
   address       String?   // Crypto address if applicable
+  safeAddress   String?   // Safe wallet address for custody
   type          String    // FIAT, CRYPTO, SAFE_MULTISIG
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
@@ -37,11 +43,24 @@ model Transaction {
   id            String    @id @default(uuid())
   userId        String
   user          User      @relation(fields: [userId], references: [id])
-  type          String    // DEPOSIT, WITHDRAWAL, TRANSFER, TRADE, INVEST
-  amount        Float
-  currency      String
+  type          String    // PAYMENT, SETTLEMENT, CONVERSION
+  amount        Float     // Fiat amount
+  currency      String    // Fiat currency (NGN, GHS)
+  usdcAmount    Float?    // Equivalent USDC
+  rate          Float?    // Conversion rate
   status        String    // PENDING, COMPLETED, FAILED
-  reference     String?   // External reference (Paystack, Transak, etc.)
+  reference     String?   @unique // Paystack or Payaza reference
+  provider      String    @default("PAYSTACK") // PAYSTACK, PAYAZA
+  createdAt     DateTime  @default(now())
+}
+
+model Settlement {
+  id            String    @id @default(uuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id])
+  amount        Float     // USDC amount
+  status        String    // PENDING, COMPLETED, FAILED
+  txHash        String?   // Blockchain tx hash
   createdAt     DateTime  @default(now())
 }
 

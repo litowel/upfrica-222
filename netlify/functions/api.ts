@@ -6,9 +6,15 @@ app.use(express.json());
 
 const router = express.Router();
 
-async function getDiditAccessToken(): Promise<string> {
-  const credentials = Buffer.from(`${process.env.DIDIT_CLIENT_ID}:${process.env.DIDIT_CLIENT_SECRET}`).toString('base64');
-  const response = await fetch('https://apx.didit.me/auth/v2/token', {
+async function getIdnormAccessToken(): Promise<string> {
+  // Clean up credentials to remove any accidental quotes, spaces, or newlines from .env
+  const clientId = (process.env.IDNORM_CLIENT_ID || '').replace(/['"]/g, '').trim();
+  const clientSecret = (process.env.IDNORM_CLIENT_SECRET || '').replace(/['"]/g, '').trim();
+  
+  console.log(`Attempting Idnorm Auth with Client ID length: ${clientId.length}`);
+
+  const credentials = Buffer.from(`${clientId}:${clientSecret}`).toString('base64');
+  const response = await fetch('https://api.idnorm.com/v1/token', {
     method: 'POST',
     headers: {
       'Authorization': `Basic ${credentials}`,
@@ -19,16 +25,23 @@ async function getDiditAccessToken(): Promise<string> {
 
   if (!response.ok) {
     const error = await response.text();
-    throw new Error(`Didit auth failed: ${error}`);
+    throw new Error(`Idnorm auth failed: ${error}`);
+  }
+
+  const contentType = response.headers.get('content-type');
+  if (!contentType || !contentType.includes('application/json')) {
+    const text = await response.text();
+    console.error("Idnorm auth returned non-JSON:", text.substring(0, 200));
+    throw new Error(`Idnorm auth returned non-JSON response. Check API URL or credentials.`);
   }
 
   const data = await response.json();
   return data.access_token;
 }
 
-async function createDiditSession(userId: string, callbackUrl: string) {
-  const token = await getDiditAccessToken();
-  const response = await fetch('https://apx.didit.me/v2/session/', {
+async function createIdnormSession(userId: string, callbackUrl: string) {
+  const token = await getIdnormAccessToken();
+  const response = await fetch('https://api.idnorm.com/v1/session', {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${token}`,
@@ -36,14 +49,21 @@ async function createDiditSession(userId: string, callbackUrl: string) {
     },
     body: JSON.stringify({
       callback: callbackUrl,
-      vendor_data: userId,
+      userId: userId,
       features: 'OCR + FACE',
     }),
   });
 
   if (!response.ok) {
     const error = await response.text();
-    throw new Error(`Didit session creation failed: ${error}`);
+    throw new Error(`Idnorm session creation failed: ${error}`);
+  }
+
+  const contentType = response.headers.get('content-type');
+  if (!contentType || !contentType.includes('application/json')) {
+    const text = await response.text();
+    console.error("Idnorm session returned non-JSON:", text.substring(0, 200));
+    throw new Error(`Idnorm session returned non-JSON response. Check API URL.`);
   }
 
   const data = await response.json();
@@ -96,7 +116,7 @@ router.post("/kyc/webhook", async (req, res) => {
   });
 });
 
-// Handle Didit redirect after completion
+// Handle Idnorm redirect after completion
 router.get("/kyc/webhook", (req, res) => {
   res.send(`
     <html>
@@ -187,23 +207,23 @@ router.post("/developers/keys", async (req, res) => {
   res.json({ userId, key, secret, type });
 });
 
-// Didit KYC Session Generation
-router.post("/kyc/didit-session", async (req, res) => {
+// Idnorm KYC Session Generation
+router.post("/kyc/idnorm-session", async (req, res) => {
   const { userId } = req.body;
   
   try {
-    if (!process.env.DIDIT_CLIENT_ID || !process.env.DIDIT_CLIENT_SECRET) {
-      console.error("DIDIT_CLIENT_ID or DIDIT_CLIENT_SECRET environment variables are missing.");
-      return res.status(500).json({ error: "KYC service is not configured. Please set DIDIT_CLIENT_ID and DIDIT_CLIENT_SECRET environment variables." });
+    if (!process.env.IDNORM_CLIENT_ID || !process.env.IDNORM_CLIENT_SECRET) {
+      console.error("IDNORM_CLIENT_ID or IDNORM_CLIENT_SECRET environment variables are missing.");
+      return res.status(500).json({ error: "KYC service is not configured. Please set IDNORM_CLIENT_ID and IDNORM_CLIENT_SECRET environment variables." });
     }
 
-    console.log(`Creating Didit session for user ${userId}...`);
+    console.log(`Creating Idnorm session for user ${userId}...`);
     const callbackUrl = `https://${req.get('host')}/api/kyc/webhook`;
-    const sessionData = await createDiditSession(userId, callbackUrl);
+    const sessionData = await createIdnormSession(userId, callbackUrl);
 
     res.json({ url: sessionData.verificationUrl, sessionId: sessionData.sessionId });
   } catch (error: any) {
-    console.error("Didit session error:", error.message || error);
+    console.error("Idnorm session error:", error.message || error);
     res.status(500).json({ error: error.message || "Network error when contacting KYC provider." });
   }
 });

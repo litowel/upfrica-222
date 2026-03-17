@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { 
   TrendingUp, 
   Users, 
@@ -16,7 +17,8 @@ import {
   Zap,
   Shield,
   Loader2,
-  X
+  X,
+  BarChart3
 } from "lucide-react";
 import { 
   BarChart, 
@@ -199,6 +201,47 @@ export default function Dashboard() {
           </div>
           <p className="text-sm font-bold text-black/40 uppercase tracking-wider">Account Status</p>
           <h3 className="text-2xl font-bold text-black mt-1">{stats?.kybStatus || "PENDING"}</h3>
+        </div>
+      </div>
+
+      {/* Ecosystem Products */}
+      <div className="mb-12">
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h3 className="text-2xl font-bold text-black tracking-tight">Upfrica Ecosystem</h3>
+            <p className="text-sm text-black/40">Explore institutional-grade financial products.</p>
+          </div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <Link 
+            href="/markets"
+            className="group relative overflow-hidden p-8 rounded-[40px] border border-black/5 bg-white shadow-sm hover:shadow-xl hover:scale-[1.02] transition-all"
+          >
+            <div className="absolute top-0 right-0 w-32 h-32 bg-black/5 rounded-bl-[80px] -mr-8 -mt-8 group-hover:bg-black/10 transition-colors" />
+            <div className="relative z-10">
+              <div className="w-14 h-14 bg-black rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-black/20 group-hover:scale-110 transition-transform">
+                <BarChart3 className="w-8 h-8 text-white" />
+              </div>
+              <h4 className="text-2xl font-bold text-black mb-2">Upfrica Markets</h4>
+              <p className="text-sm text-black/40 max-w-xs mb-6">
+                Tokenize and trade institutional-grade real-world assets. Prime real estate, equity, and funds.
+              </p>
+              <div className="flex items-center gap-2 text-sm font-bold text-black">
+                Explore Platform
+                <ArrowUpRight className="w-4 h-4 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+              </div>
+            </div>
+          </Link>
+
+          <div className="p-8 rounded-[40px] border border-black/5 bg-black/[0.02] flex flex-col justify-center items-center text-center border-dashed">
+            <div className="w-14 h-14 bg-black/5 rounded-2xl flex items-center justify-center mb-6">
+              <Plus className="w-8 h-8 text-black/20" />
+            </div>
+            <h4 className="text-xl font-bold text-black/40 mb-2">Coming Soon</h4>
+            <p className="text-sm text-black/20 max-w-xs">
+              We're building more institutional products to power the future of African finance.
+            </p>
+          </div>
         </div>
       </div>
 

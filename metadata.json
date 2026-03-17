@@ -1,5 +1,5 @@
 {
-  "name": "Upfrica FlowPay",
-  "description": "Production-ready SaaS for merchants to accept fiat payments and automatically settle into USDC wallets.",
+  "name": "Upfrica FlowPay & Markets",
+  "description": "Comprehensive platform for merchant fiat-to-USDC payments and institutional-grade real-world asset tokenization.",
   "requestFramePermissions": ["camera", "microphone"]
 }

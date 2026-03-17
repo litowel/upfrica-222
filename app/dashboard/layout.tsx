@@ -13,7 +13,10 @@ import {
   Zap, 
   ShieldCheck,
   Menu,
-  X
+  X,
+  BarChart3,
+  ChevronDown,
+  ArrowRight
 } from "lucide-react";
 import { toast } from "react-hot-toast";
 
@@ -49,6 +52,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     { name: "Wallets", icon: Wallet, href: "/dashboard/wallets" },
     { name: "Security", icon: ShieldCheck, href: "/dashboard/security" },
     { name: "Settings", icon: Settings, href: "/dashboard/settings" },
+    { name: "Upfrica Markets", icon: BarChart3, href: "/markets" },
   ];
 
   if (!user) return null;
@@ -70,7 +74,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
 
           <nav className="flex-1 space-y-2">
-            {navItems.map((item) => {
+            <div className="px-4 py-2">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-black/20">Main Menu</p>
+            </div>
+            {navItems.filter(i => i.name !== "Upfrica Markets").map((item) => {
               const isActive = pathname === item.href;
               return (
                 <Link
@@ -87,6 +94,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 </Link>
               );
             })}
+
+            <div className="px-4 py-4 mt-4">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-black/20">Ecosystem Products</p>
+            </div>
+            <Link
+              href="/markets"
+              className="flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-semibold text-black/40 hover:bg-black/5 hover:text-black transition-all"
+            >
+              <BarChart3 className="w-5 h-5 text-black/40" />
+              Upfrica Markets
+            </Link>
           </nav>
 
           <button
@@ -110,9 +128,44 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             >
               {isSidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
-            <h2 className="text-lg font-bold text-black">
-              {navItems.find(i => i.href === pathname)?.name || "Dashboard"}
-            </h2>
+            <div className="flex items-center gap-4">
+              <h2 className="text-lg font-bold text-black">
+                {navItems.find(i => i.href === pathname)?.name || "Dashboard"}
+              </h2>
+              <div className="h-6 w-px bg-black/5 mx-2" />
+              <div className="relative group">
+                <button className="flex items-center gap-1 text-xs font-bold text-black/40 hover:text-black transition-colors">
+                  Products
+                  <ChevronDown className="w-3 h-3" />
+                </button>
+                <div className="absolute top-full left-0 w-64 bg-white border border-black/5 rounded-2xl shadow-xl p-4 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all mt-2">
+                  <Link href="/dashboard" className="flex items-center gap-3 p-3 rounded-xl bg-black/5 transition-colors">
+                    <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center shrink-0">
+                      <Zap className="text-white w-4 h-4" />
+                    </div>
+                    <div>
+                      <p className="text-black font-bold text-xs">FlowPay</p>
+                      <p className="text-[9px] text-black/40">Fiat-to-USDC Settlements</p>
+                    </div>
+                  </Link>
+                  <Link href="/markets" className="flex items-center gap-3 p-3 rounded-xl hover:bg-black/5 transition-colors mt-2">
+                    <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center shrink-0">
+                      <BarChart3 className="text-white w-4 h-4" />
+                    </div>
+                    <div>
+                      <p className="text-black font-bold text-xs">Upfrica Markets</p>
+                      <p className="text-[9px] text-black/40">RWA Tokenization Platform</p>
+                    </div>
+                  </Link>
+                  <div className="mt-4 pt-4 border-t border-black/5">
+                    <Link href="/products" className="text-[10px] font-bold text-black hover:text-black/60 transition-colors flex items-center justify-between">
+                      View All Products
+                      <ArrowRight className="w-3 h-3" />
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
 
           <div className="flex items-center gap-4">

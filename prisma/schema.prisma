@@ -24,6 +24,10 @@ model User {
   apiKeys       ApiKey[]
   transactions  Transaction[]
   settlements   Settlement[]
+  
+  investments   Investment[]
+  kycRecord     KycRecord?
+  orders        Order[]
 }
 
 model Wallet {
@@ -73,4 +77,64 @@ model ApiKey {
   type          String    // SANDBOX, PRODUCTION
   createdAt     DateTime  @default(now())
   isActive      Boolean   @default(true)
+}
+
+model Asset {
+  id            String    @id @default(uuid())
+  name          String
+  description   String
+  type          String    // REAL_ESTATE, EQUITY, FUND
+  totalValue    Float
+  tokenPrice    Float
+  totalTokens   Int
+  availableTokens Int
+  location      String?
+  yield         Float?    // Annual yield percentage
+  status        String    @default("ACTIVE") // ACTIVE, FUNDED, CLOSED
+  imageUrl      String?
+  tokenAddress  String?   // thirdweb contract address
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  investments   Investment[]
+  orders        Order[]
+}
+
+model Investment {
+  id            String    @id @default(uuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id])
+  assetId       String
+  asset         Asset     @relation(fields: [assetId], references: [id])
+  tokens        Int
+  amount        Float     // Total invested amount
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model KycRecord {
+  id            String    @id @default(uuid())
+  userId        String    @unique
+  user          User      @relation(fields: [userId], references: [id])
+  status        String    @default("PENDING") // PENDING, VERIFIED, REJECTED
+  idType        String?
+  idNumber      String?
+  documentUrl   String?
+  verifiedAt    DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Order {
+  id            String    @id @default(uuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id])
+  assetId       String
+  asset         Asset     @relation(fields: [assetId], references: [id])
+  type          String    // BUY, SELL
+  price         Float
+  quantity      Int
+  status        String    @default("OPEN") // OPEN, FILLED, CANCELLED
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 }

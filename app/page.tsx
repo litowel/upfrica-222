@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, Shield, Zap, Globe, Wallet } from "lucide-react";
+import { ArrowRight, Shield, Zap, Globe, Wallet, BarChart3 } from "lucide-react";
 
 export default function Home() {
   return (
@@ -12,6 +12,44 @@ export default function Home() {
           </div>
           <span className="font-bold text-xl tracking-tight">FlowPay</span>
         </div>
+        
+        <div className="hidden md:flex items-center gap-8 text-sm font-medium text-black/60">
+          <div className="relative group cursor-pointer py-2">
+            <span className="hover:text-black transition-colors flex items-center gap-1">
+              Products
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+            </span>
+            <div className="absolute top-full left-0 w-64 bg-white border border-black/5 rounded-2xl shadow-xl p-4 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
+              <Link href="/" className="flex items-center gap-3 p-3 rounded-xl hover:bg-black/5 transition-colors">
+                <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center shrink-0">
+                  <Zap className="text-white w-4 h-4" />
+                </div>
+                <div>
+                  <p className="text-black font-bold">FlowPay</p>
+                  <p className="text-[10px] text-black/40">Fiat-to-USDC Settlements</p>
+                </div>
+              </Link>
+              <Link href="/markets" className="flex items-center gap-3 p-3 rounded-xl hover:bg-black/5 transition-colors mt-2">
+                <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center shrink-0">
+                  <BarChart3 className="text-white w-4 h-4" />
+                </div>
+                <div>
+                  <p className="text-black font-bold">Upfrica Markets</p>
+                  <p className="text-[10px] text-black/40">RWA Tokenization Platform</p>
+                </div>
+              </Link>
+              <div className="mt-4 pt-4 border-t border-black/5">
+                <Link href="/products" className="text-xs font-bold text-black hover:text-black/60 transition-colors flex items-center justify-between">
+                  View All Products
+                  <ArrowRight className="w-3 h-3" />
+                </Link>
+              </div>
+            </div>
+          </div>
+          <Link href="#features" className="hover:text-black transition-colors">Features</Link>
+          <Link href="#" className="hover:text-black transition-colors">Pricing</Link>
+        </div>
+
         <div className="flex items-center gap-6">
           <Link href="/login" className="text-sm font-medium hover:text-black/60 transition-colors">
             Login

@@ -64,12 +64,11 @@ export default function Home() {
           The Financial Operating System for the Global Economy
         </h1>
         <p className="text-xl text-white/50 mb-10 max-w-2xl">
-          Move, manage, and multiply capital across 190+ countries — with institutional-grade treasury, payments, and asset management.
+          Move, manage, and multiply capital across 190+ countries.
         </p>
-        <div className="flex flex-col sm:flex-row gap-4 mb-16">
+        <div className="flex flex-col sm:flex-row gap-4">
           <Link href="/signup" className="bg-emerald-500 text-black px-8 py-4 rounded-2xl text-lg font-bold hover:bg-emerald-400 transition-all flex items-center gap-2">
-            Start Banking
-            <ArrowRight className="w-5 h-5" />
+            Start Banking <ArrowRight className="w-5 h-5" />
           </Link>
           <Link href="/developers" className="border border-white/10 px-8 py-4 rounded-2xl text-lg font-semibold hover:bg-white/5 transition-all">
             Developer API
@@ -96,8 +95,8 @@ export default function Home() {
         </div>
       </section>
       <footer className="px-6 py-12 border-t border-white/10 text-center text-sm text-white/30">
-        <p className="mb-2">© 2026 UpFrica Financial Systems. All rights reserved.</p>
-        <p className="text-white/20 text-xs">Operated by Oskayi Consult Ltd, Ghana.</p>
+        <p>© 2026 UpFrica Financial Systems. All rights reserved.</p>
+        <p className="text-white/20 text-xs mt-1">Operated by Oskayi Consult Ltd, Ghana.</p>
       </footer>
     </div>
   );
